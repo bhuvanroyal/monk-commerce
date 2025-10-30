@@ -25,5 +25,6 @@ public class CartWiseCouponService implements CouponService {
 	     }
 	     return (cart.getTotalAmount() * c.getDiscountPercent()) / 100;
 	}
+	
 
 }

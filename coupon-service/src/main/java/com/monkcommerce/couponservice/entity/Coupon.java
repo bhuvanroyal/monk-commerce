@@ -33,16 +33,16 @@ public abstract class Coupon {
 	@Column(nullable = false)
 	private String type;
 	
-	@Column(nullable = false)
-	private String code;
-	
-	private boolean active;
-	
-	private LocalDate expiryDate;
-	
-	private String description;
-	
-	private LocalDate startDate;
+//	@Column(nullable = false)
+//	private String code;
+//	
+//	private boolean active;
+//	
+//	private LocalDate expiryDate;
+//	
+//	private String description;
+//	
+//	private LocalDate startDate;
 	
 	private LocalDateTime createdAt;
 	
