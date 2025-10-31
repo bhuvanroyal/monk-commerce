@@ -69,6 +69,23 @@ Example:
   }
 }
 
-
 💡 Buying 6 units of Product 1 → get 3 units of Product 3 free (worth ₹75).
 
+Limitations
+
+1. Product catalog data is not stored; pricing comes directly from cart request.
+2. BxGy assumes same quantity rule for all buy-products.
+3. No concurrency or transaction handling beyond basic persistence.
+4. Single-table inheritance could become heavy if coupon types increase.
+5. No API authentication or authorization layer included.
+6. Currency assumed to be INR.
+7. Basic error responses — no custom exception structure yet.
+
+Assumptions
+
+1. type field in requests is always valid (cart-wise, product-wise, bxgy).
+2. Product IDs in cart are valid and unique.
+3. All prices are in INR and positive numbers.
+4. Each coupon can also have a unique code like SAVE10 or B2G1FREE.
+5. Free items in BxGy are added to the same product’s quantity instead of separate items.
+6. Future improvement: Introduce a data-driven rule engine allowing marketing teams to create new coupon types dynamically without code changes.
