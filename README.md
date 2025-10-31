@@ -34,7 +34,7 @@ Applies a percentage discount to the **entire cart total** if it exceeds a speci
   }
 }
 
-2. Product-wise Coupon
+### 🟢2. Product-wise Coupon
 
 Applies a discount on specific product(s) in the cart.
 
