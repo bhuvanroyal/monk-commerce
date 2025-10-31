@@ -27,4 +27,17 @@ public class CouponController {
         return ResponseEntity.ok(couponApplicationService.createCoupon(type, details));
         
 	}
+	
+	@PostMapping("/applicable-coupons")
+    public ResponseEntity<Map<String, Object>> getApplicableCoupons(@RequestBody Map<String, Object> request) {
+       
+        Map<String, Object> cartMap = (Map<String, Object>) request.get("cart");
+        if (cartMap == null || cartMap.get("items") == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Missing cart data"));
+        }
+        
+        return ResponseEntity.ok(couponApplicationService.getApplicableCoupons(cartMap)); 
+        
+	}
+	
 }
