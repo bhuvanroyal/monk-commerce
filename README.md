@@ -25,16 +25,16 @@ It supports three main coupon types:
 Applies a percentage discount to the **entire cart total** if it exceeds a specified threshold.
 
 **Example:**
-```json
+
 {
   "type": "cart-wise",
   "details": {
     "threshold": 100,
     "discount": 10
   }
-}
+} 
 
-### 🟢2. Product-wise Coupon
+### 🟢 2. Product-wise Coupon
 
 Applies a discount on specific product(s) in the cart.
 
@@ -47,8 +47,28 @@ Example:
     "discount": 20
   }
 }
-
-
-
-
 💡 If product #1 costs ₹100 × 3 → discount = ₹60.
+
+### 🟢 3. BxGy Coupon (Buy X Get Y Free)
+
+Buy certain quantities of products from one list and get other products for free.
+
+Example:
+
+{
+  "type": "bxgy",
+  "details": {
+    "buy_products": [
+      {"product_id": 1, "quantity": 2},
+      {"product_id": 2, "quantity": 2}
+    ],
+    "get_products": [
+      {"product_id": 3, "quantity": 1}
+    ],
+    "repition_limit": 3
+  }
+}
+
+
+💡 Buying 6 units of Product 1 → get 3 units of Product 3 free (worth ₹75).
+
