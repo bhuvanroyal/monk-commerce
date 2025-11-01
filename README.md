@@ -25,7 +25,7 @@ It supports three main coupon types:
 Applies a percentage discount to the **entire cart total** if it exceeds a specified threshold.
 
 **Example:**
-
+```json
 {
   "type": "cart-wise",
   "details": {
@@ -33,13 +33,13 @@ Applies a percentage discount to the **entire cart total** if it exceeds a speci
     "discount": 10
   }
 } 
-
+```
 ### 🟢 2. Product-wise Coupon
 
 Applies a discount on specific product(s) in the cart.
 
 Example:
-
+```json
 {
   "type": "product-wise",
   "details": {
@@ -47,6 +47,7 @@ Example:
     "discount": 20
   }
 }
+```
 💡 If product #1 costs ₹100 × 3 → discount = ₹60.
 
 ### 🟢 3. BxGy Coupon (Buy X Get Y Free)
@@ -54,7 +55,7 @@ Example:
 Buy certain quantities of products from one list and get other products for free.
 
 Example:
-
+```json
 {
   "type": "bxgy",
   "details": {
@@ -68,7 +69,7 @@ Example:
     "repition_limit": 3
   }
 }
-
+```
 💡 Buying 6 units of Product 1 → get 3 units of Product 3 free (worth ₹75).
 
 Limitations
@@ -89,3 +90,28 @@ Assumptions
 4. Each coupon can also have a unique code like SAVE10 or B2G1FREE.
 5. Free items in BxGy are added to the same product’s quantity instead of separate items.
 6. Future improvement: Introduce a data-driven rule engine allowing marketing teams to create new coupon types dynamically without code changes.
+
+How to Run This Application Locally
+1️⃣ Clone the Repository
+  - git clone https://github.com/bhuvanroyal/monk-commerce.git
+    
+2️⃣ Navigate into the Project Directory
+  - cd monk-commerce
+
+3️⃣ Create a Database in MySQL
+  - Open your MySQL terminal or client (like MySQL Workbench) and run:
+  - CREATE DATABASE coupons_db;
+
+4️⃣ Update Database Configuration
+  - In your src/main/resources/application.properties
+  - Replace your_password with your actual MySQL root password.
+  - You can also set ddl-auto=create if you want it to recreate tables every time you start.
+
+5️⃣ Build the Project
+  - mvn clean install
+
+6️⃣ Run the Application
+  - mvn spring-boot:run
+    
+7️⃣ Test Endpoints via Postman or cURL
+  - POST http://localhost:8085/coupons
