@@ -1,15 +1,25 @@
 package com.monkcommerce.couponservice.controller;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.monkcommerce.couponservice.dto.response.UpdatedCartResponse;
+import com.monkcommerce.couponservice.entity.BxGyCoupon;
+import com.monkcommerce.couponservice.entity.CartWiseCoupon;
 import com.monkcommerce.couponservice.entity.Coupon;
+import com.monkcommerce.couponservice.entity.ProductWiseCoupon;
 import com.monkcommerce.couponservice.service.impl.CouponApplicationService;
 
 @RestController
@@ -18,6 +28,9 @@ public class CouponController {
 	
 	@Autowired
 	CouponApplicationService couponApplicationService;
+	
+	@Autowired
+	private ObjectMapper objectMapper;
 	
 	@PostMapping("/coupons")
     public ResponseEntity<Coupon> createCoupon(@RequestBody Map<String, Object> payload) {
@@ -39,5 +52,47 @@ public class CouponController {
         return ResponseEntity.ok(couponApplicationService.getApplicableCoupons(cartMap)); 
         
 	}
+	
+	@PostMapping("/apply-coupon/{id}")
+	public ResponseEntity<UpdatedCartResponse> applyCoupon(@PathVariable Long id, @RequestBody Map<String, Object> request) {
+		return ResponseEntity.ok(couponApplicationService.applyCouponAndReturnCart(request,id));
+	}
+	
+	@GetMapping
+    public ResponseEntity<List<Coupon>> getAllCoupons() {
+        return ResponseEntity.ok(couponApplicationService.getAllCoupons());
+    }
+	
+	@GetMapping("/{id}")
+    public ResponseEntity<Coupon> getCouponById(@PathVariable Long id) {
+        return ResponseEntity.ok(couponApplicationService.getCouponById(id));
+    }
+	
+	@PutMapping("/{id}")
+    public ResponseEntity<Coupon> updateCoupon(@PathVariable Long id,  @RequestBody Map<String, Object> request)
+    {
+		String type = (String) request.get("type");
+
+        if ("cart-wise".equalsIgnoreCase(type)) {
+            CartWiseCoupon updated = objectMapper.convertValue(request, CartWiseCoupon.class);
+            return ResponseEntity.ok(couponApplicationService.updateCoupon(id, updated));
+        } 
+        else if ("product-wise".equalsIgnoreCase(type)) {
+            ProductWiseCoupon updated = objectMapper.convertValue(request, ProductWiseCoupon.class);
+            return ResponseEntity.ok(couponApplicationService.updateCoupon(id, updated));
+        } 
+        else if ("bxgy".equalsIgnoreCase(type)) {
+            BxGyCoupon updated = objectMapper.convertValue(request, BxGyCoupon.class);
+            return ResponseEntity.ok(couponApplicationService.updateCoupon(id, updated));
+        }
+
+        return ResponseEntity.badRequest().build();
+    }
+	
+	@DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteCoupon(@PathVariable Long id) {
+        couponApplicationService.deleteCoupon(id);
+        return ResponseEntity.noContent().build();
+    }
 	
 }

@@ -7,12 +7,16 @@ import org.springframework.stereotype.Service;
 
 import com.monkcommerce.couponservice.dto.CartItem;
 import com.monkcommerce.couponservice.dto.CartRequest;
+import com.monkcommerce.couponservice.dto.response.UpdatedCartItemResponse;
+import com.monkcommerce.couponservice.dto.response.UpdatedCartResponse;
 import com.monkcommerce.couponservice.entity.BxGyCoupon;
 import com.monkcommerce.couponservice.entity.CartWiseCoupon;
 import com.monkcommerce.couponservice.entity.Coupon;
 import com.monkcommerce.couponservice.entity.ProductWiseCoupon;
 import com.monkcommerce.couponservice.repository.CouponRepository;
 import com.monkcommerce.couponservice.service.CouponService;
+
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class CouponApplicationService {
@@ -126,6 +130,138 @@ public class CouponApplicationService {
         response.put("applicable_coupons", applicableCoupons);
 
         return response;
+	}
+
+	public UpdatedCartResponse applyCouponAndReturnCart(Map<String, Object> request, Long id) {
+		
+		 Coupon coupon = couponRepository.findById(id)
+		            .orElseThrow(() -> new RuntimeException("Coupon not found"));
+		 Map<String, Object> cartMap = (Map<String, Object>) request.get("cart");
+		    List<Map<String, Object>> items = (List<Map<String, Object>>) cartMap.get("items");
+
+		    List<CartItem> cartItems = items.stream()
+		            .map(i -> new CartItem(
+		                    Long.valueOf(i.get("product_id").toString()),
+		                    ((Number) i.get("quantity")).intValue(),
+		                    Double.valueOf(i.get("price").toString())
+		            ))
+		            .toList();
+
+		    CartRequest cart = new CartRequest();
+		    cart.setItems(cartItems);
+		    
+		    CouponService service = couponServiceFactory.getService(coupon);
+		    
+		    if (!service.isApplicable(coupon, cart)) {
+		        throw new RuntimeException("Coupon not applicable for this cart");
+		    }
+		    
+		    double discount = service.calculateDiscount(coupon, cart);
+
+		    double totalPrice = 0.0;
+		    for (CartItem item : cart.getItems()) {
+		        totalPrice += item.getPrice() * item.getQuantity();
+		    }
+
+		    double totalDiscount = discount;
+		    double finalPrice = totalPrice - totalDiscount;
+		    
+		    List<UpdatedCartItemResponse> itemList = cart.getItems().stream()
+		            .map(i -> new UpdatedCartItemResponse(
+		                    i.getProductId(),
+		                    i.getQuantity(),
+		                    i.getPrice(),
+		                    0.0 
+		            ))
+		            .toList();
+		    
+		    if(coupon instanceof ProductWiseCoupon) {
+		    	ProductWiseCoupon c = (ProductWiseCoupon) coupon;
+		    	for(UpdatedCartItemResponse uci:itemList) {
+		    		if(c.getProductId()==uci.getProductId())
+		    			uci.setTotalDiscount((uci.getPrice() * uci.getQuantity() * c.getDiscountPercent() / 100));
+		    	}
+		    }
+		    
+		    UpdatedCartResponse updatedCart = new UpdatedCartResponse();
+		    updatedCart.setItems(itemList);
+		    updatedCart.setTotalPrice(totalPrice);
+		    updatedCart.setTotalDiscount(totalDiscount);
+		    updatedCart.setFinalPrice(finalPrice);
+		    
+		    if (coupon instanceof BxGyCoupon bxgy) {
+		        applyBxGyFreeItems(bxgy, cart, itemList, discount);
+		        updatedCart.setTotalPrice(totalPrice+discount);
+		        updatedCart.setFinalPrice(updatedCart.getTotalPrice()-discount);
+		    } 
+		    
+		    return updatedCart;
+		
+	}
+	
+	private void applyBxGyFreeItems(BxGyCoupon bxgy, CartRequest cart, List<UpdatedCartItemResponse> items, double discount) {
+	
+		int totalRepetitions = 0;
+
+	    for (CartItem item : cart.getItems()) {
+	        Integer requiredQty = bxgy.getBuyProducts().get(item.getProductId());
+	        if (requiredQty != null && requiredQty > 0) {
+	            int reps = item.getQuantity() / requiredQty;
+	            totalRepetitions += reps;
+	        }
+	    }
+
+	    totalRepetitions = Math.min(totalRepetitions, bxgy.getRepetitionLimit());
+
+	    for (UpdatedCartItemResponse item : items) {
+	        if (bxgy.getGetProducts().containsKey(item.getProductId())) {
+	            int freeQtyPerRepetition = bxgy.getGetProducts().get(item.getProductId());
+	            int totalFreeQty = freeQtyPerRepetition * totalRepetitions;
+
+	            item.setQuantity(item.getQuantity() + totalFreeQty);
+	            item.setTotalDiscount(item.getPrice() * totalFreeQty);
+	        }
+	    }
+	}
+
+	public List<Coupon> getAllCoupons() {
+		return couponRepository.findAll();
+	}
+
+	public Coupon getCouponById(Long id) {
+		return couponRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Coupon not found with ID: " + id));
+	}
+
+	public Coupon updateCoupon(Long id, Coupon updatedCoupon) {
+		Coupon existingCoupon = couponRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Coupon not found with ID: " + id));
+
+		existingCoupon.setType(updatedCoupon.getType());
+
+        if (existingCoupon instanceof CartWiseCoupon cartWise && updatedCoupon instanceof CartWiseCoupon updatedCart) {
+            cartWise.setThresholdAmount(updatedCart.getThresholdAmount());
+            cartWise.setDiscountPercent(updatedCart.getDiscountPercent());
+        }
+        else if (existingCoupon instanceof ProductWiseCoupon productWise && updatedCoupon instanceof ProductWiseCoupon updatedProduct) {
+            productWise.setProductId(updatedProduct.getProductId());
+            productWise.setDiscountPercent(updatedProduct.getDiscountPercent());
+        }
+        else if (existingCoupon instanceof BxGyCoupon bxgy && updatedCoupon instanceof BxGyCoupon updatedBxgy) {
+            bxgy.setBuyProducts(updatedBxgy.getBuyProducts());
+            bxgy.setGetProducts(updatedBxgy.getGetProducts());
+            bxgy.setRepetitionLimit(updatedBxgy.getRepetitionLimit());
+        }
+
+        return couponRepository.save(existingCoupon);
+	}
+
+	public void deleteCoupon(Long id) {
+		if (!couponRepository.existsById(id)) {
+            throw new EntityNotFoundException("Coupon not found with ID: " + id);
+        }
+        couponRepository.deleteById(id);
+		
 	}
 	
 	
