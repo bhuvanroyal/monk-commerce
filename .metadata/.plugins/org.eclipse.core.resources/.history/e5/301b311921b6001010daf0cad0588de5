@@ -1,0 +1,42 @@
+package com.monkcommerce.couponservice.service.impl;
+
+import com.monkcommerce.couponservice.dto.CartItem;
+import com.monkcommerce.couponservice.dto.CartRequest;
+import com.monkcommerce.couponservice.entity.Coupon;
+import com.monkcommerce.couponservice.entity.ProductWiseCoupon;
+import com.monkcommerce.couponservice.service.CouponService;
+
+public class ProductWiseCouponService implements CouponService {
+
+	 	@Override
+	    public boolean isApplicable(Coupon coupon, CartRequest cart) {
+	        ProductWiseCoupon c = (ProductWiseCoupon) coupon;
+
+	        // Check if the cart contains the product to which this coupon applies
+	        return cart.getItems().stream()
+	                .anyMatch(item -> item.getProductId().equals(c.getProductId()));
+	    }
+
+	    @Override
+	    public double calculateDiscount(Coupon coupon, CartRequest cart) {
+	        ProductWiseCoupon c = (ProductWiseCoupon) coupon;
+
+	        // If not applicable, no discount
+	        if (!isApplicable(c, cart)) {
+	            return 0.0;
+	        }
+
+	        // Find the matching product in the cart
+	        double totalDiscount = 0.0;
+	        for (CartItem item : cart.getItems()) {
+	            if (item.getProductId().equals(c.getProductId())) {
+	                double productTotal = item.getPrice() * item.getQuantity();
+	                totalDiscount = (c.getDiscountPercent() / 100.0) * productTotal;
+	                break;
+	            }
+	        }
+
+	        return totalDiscount;
+	    }
+
+}

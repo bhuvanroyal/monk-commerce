@@ -1,0 +1,58 @@
+package com.monkcommerce.couponservice.service.impl;
+import java.util.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.monkcommerce.couponservice.dto.CartRequest;
+import com.monkcommerce.couponservice.entity.CartWiseCoupon;
+import com.monkcommerce.couponservice.entity.Coupon;
+import com.monkcommerce.couponservice.repository.CouponRepository;
+import com.monkcommerce.couponservice.service.CouponService;
+
+@Service
+public class CouponApplicationService {
+
+	 @Autowired
+	 private CouponRepository couponRepository;
+
+	 @Autowired
+	 private CouponServiceFactory couponServiceFactory;
+
+	 public String applyCoupon(String code, CartRequest cart) 
+	 {
+	     Coupon coupon = couponRepository.findByCode(code)
+	     .orElseThrow(() -> new RuntimeException("Coupon not found"));
+
+	     CouponService service = couponServiceFactory.getService(coupon);
+
+	     if (!service.isApplicable(coupon, cart)) {
+	    	 return "Coupon not applicable";
+	     }
+	            
+
+	     double discount = service.calculateDiscount(coupon, cart);
+	     return "Coupon applied successfully. Discount: " + discount;
+	 }
+	 
+	 public Coupon createCoupon(String type, Map<String, Object> details) {
+		 
+		Coupon coupon;
+		switch (type) {
+     		case "cart-wise":
+     			CartWiseCoupon cwc = new CartWiseCoupon();
+     			cwc.setType(type);
+     			cwc.setThresholdAmount(Double.valueOf(details.get("threshold").toString()));
+     			cwc.setDiscountPercent(Double.valueOf(details.get("discount").toString()));
+     			coupon=cwc;
+     			break;
+     		
+     		default:
+     			throw new RuntimeException("Invalid coupon type: " + type);
+		}
+		
+		Coupon saved = couponRepository.save(coupon);
+		return saved;
+	 
+	 }
+	 
+}

@@ -1,0 +1,5 @@
+package com.monkcommerce.couponservice.controller;
+
+public class CouponController {
+
+}

@@ -1,0 +1,5 @@
+package com.monkcommerce.couponservice.service.impl;
+
+public class ProductWiseCouponService {
+
+}

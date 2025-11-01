@@ -1,0 +1,21 @@
+package com.monkcommerce.couponservice.service.impl;
+
+import com.monkcommerce.couponservice.dto.CartRequest;
+import com.monkcommerce.couponservice.entity.Coupon;
+import com.monkcommerce.couponservice.service.CouponService;
+
+public class ProductWiseCouponService implements CouponService {
+
+	@Override
+	public boolean isApplicable(Coupon coupon, CartRequest cart) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public double calculateDiscount(Coupon coupon, CartRequest cart) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+}

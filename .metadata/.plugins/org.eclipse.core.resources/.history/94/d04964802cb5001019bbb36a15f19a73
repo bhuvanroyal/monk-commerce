@@ -1,0 +1,18 @@
+package com.monkcommerce.couponservice.entity;
+import java.time.LocalDate;
+import java.util.*;
+
+public abstract class Coupon {
+	
+	private Long id;
+	
+	private String type;
+	
+	private boolean active;
+	
+	private LocalDate expiryDate;
+	
+		
+	
+
+}

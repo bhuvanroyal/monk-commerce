@@ -1,0 +1,38 @@
+package com.monkcommerce.couponservice.entity;
+import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MapKeyColumn;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@Entity
+@DiscriminatorValue("bxgy")
+public class BxGyCoupon extends Coupon{
+
+	@ElementCollection
+    @CollectionTable(name = "bxgy_buy_products", joinColumns = @JoinColumn(name = "coupon_id"))
+    @MapKeyColumn(name = "product_id")
+    @Column(name = "quantity")
+    private Map<Long, Integer> buyProducts = new HashMap<>();
+
+    // Map of product_id → free quantity
+    @ElementCollection
+    @CollectionTable(name = "bxgy_get_products", joinColumns = @JoinColumn(name = "coupon_id"))
+    @MapKeyColumn(name = "product_id")
+    @Column(name = "quantity")
+    private Map<Long, Integer> getProducts = new HashMap<>();
+
+    private Integer repetitionLimit;
+}

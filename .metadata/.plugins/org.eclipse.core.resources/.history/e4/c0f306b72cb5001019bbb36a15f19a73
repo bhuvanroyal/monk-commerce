@@ -1,0 +1,47 @@
+package com.monkcommerce.couponservice.entity;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+
+@Entity
+public abstract class Coupon {
+	
+	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	private Long id;
+	
+	private String type;
+	
+	private boolean active;
+	
+	private LocalDate expiryDate;
+	
+	private String code;
+	
+	private String description;
+	
+	private LocalDate startDate;
+	
+	private LocalDateTime createdAt;
+	
+	private LocalDateTime updatedAt;
+	
+	
+	@PrePersist
+	public void onCreate() {
+	    this.createdAt = LocalDateTime.now();
+	    this.updatedAt = LocalDateTime.now();
+	}
+
+	@PreUpdate
+	public void onUpdate() {
+	    this.updatedAt = LocalDateTime.now();
+	}
+}

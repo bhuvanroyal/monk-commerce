@@ -1,0 +1,20 @@
+package com.monkcommerce.couponservice.dto;
+
+import java.util.List;
+
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class CartRequest {
+	
+	private List<CartItem> items;
+
+    public double getTotalAmount() {
+        if (items == null) return 0.0;
+        return items.stream()
+                .mapToDouble(i -> i.getPrice() * i.getQuantity())
+                .sum();
+    }
+}

@@ -1,0 +1,14 @@
+package com.monkcommerce.couponservice.entity;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@Entity
+@DiscriminatorValue("product-wise")
+public class ProductWiseCoupon extends Coupon {
+
+	 private Long productId;
+
+	 private Double discountPercent; 
+	
+}

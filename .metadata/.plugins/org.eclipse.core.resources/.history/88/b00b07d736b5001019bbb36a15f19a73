@@ -1,0 +1,27 @@
+package com.monkcommerce.couponservice.service.impl;
+
+import org.springframework.stereotype.Service;
+
+import com.monkcommerce.couponservice.dto.CartRequest;
+import com.monkcommerce.couponservice.entity.CartWiseCoupon;
+import com.monkcommerce.couponservice.entity.Coupon;
+import com.monkcommerce.couponservice.service.CouponService;
+
+
+@Service("cartWiseCouponService")
+public class CartWiseCouponService implements CouponService {
+
+	@Override
+	public boolean isApplicable(Coupon coupon, CartRequest cart) {
+		CartWiseCoupon c = (CartWiseCoupon) coupon;
+        return cart.getTotalAmount() >= c.getThresholdAmount();
+	}
+
+	@Override
+	public double calculateDiscount(Coupon coupon, CartRequest cart) {
+		 CartWiseCoupon c = (CartWiseCoupon) coupon;
+	        if (!isApplicable(c, cart)) return 0.0;
+	        return (cart.getTotalAmount() * c.getDiscountPercent()) / 100;
+	}
+
+}

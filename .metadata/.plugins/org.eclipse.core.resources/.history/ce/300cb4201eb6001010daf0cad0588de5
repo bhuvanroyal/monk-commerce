@@ -1,0 +1,30 @@
+package com.monkcommerce.couponservice.controller;
+
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.monkcommerce.couponservice.entity.Coupon;
+import com.monkcommerce.couponservice.service.impl.CouponApplicationService;
+
+@RestController
+@RequestMapping("/")
+public class CouponController {
+	
+	@Autowired
+	CouponApplicationService couponApplicationService;
+	
+	@PostMapping("/coupons")
+    public ResponseEntity<Coupon> createCoupon(@RequestBody Map<String, Object> payload) {
+        String type = (String) payload.get("type");
+        Map<String, Object> details = (Map<String, Object>) payload.get("details");
+        
+        return ResponseEntity.ok(couponApplicationService.createCoupon(type, details));
+        
+	}
+}

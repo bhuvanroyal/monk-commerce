@@ -1,0 +1,59 @@
+package com.monkcommerce.couponservice.service.impl;
+
+import com.monkcommerce.couponservice.dto.CartItem;
+import com.monkcommerce.couponservice.dto.CartRequest;
+import com.monkcommerce.couponservice.entity.BxGyCoupon;
+import com.monkcommerce.couponservice.entity.Coupon;
+import com.monkcommerce.couponservice.service.CouponService;
+
+public class BxGyCouponService implements CouponService {
+
+	 @Override
+	    public boolean isApplicable(Coupon coupon, CartRequest cart) {
+	        BxGyCoupon c = (BxGyCoupon) coupon;
+
+	        // For each product in cart, check if it meets any "buy" product condition
+	        for (CartItem item : cart.getItems()) {
+	            Integer requiredQty = c.getBuyProducts().get(item.getProductId());
+	            if (requiredQty != null && item.getQuantity() >= requiredQty) {
+	                // At least one qualifying buy product found
+	                return true;
+	            }
+	        }
+
+	        return false;
+	    }
+
+	    @Override
+	    public double calculateDiscount(Coupon coupon, CartRequest cart) {
+	        BxGyCoupon c = (BxGyCoupon) coupon;
+
+	        double totalDiscount = 0.0;
+
+	        // Calculate total eligible "buy" repetitions (how many times the offer applies)
+	        int totalRepetitions = 0;
+
+	        for (CartItem item : cart.getItems()) {
+	            Integer requiredQty = c.getBuyProducts().get(item.getProductId());
+	            if (requiredQty != null && requiredQty > 0) {
+	                int reps = item.getQuantity() / requiredQty;
+	                totalRepetitions += reps;
+	            }
+	        }
+
+	        // Apply repetition limit
+	        totalRepetitions = Math.min(totalRepetitions, c.getRepetitionLimit());
+
+	        // For each eligible repetition, apply free "get" product discount
+	        for (CartItem item : cart.getItems()) {
+	            if (c.getGetProducts().containsKey(item.getProductId())) {
+	                int freeQty = c.getGetProducts().get(item.getProductId()) * totalRepetitions;
+	                double itemDiscount = freeQty * item.getPrice();
+	                totalDiscount += itemDiscount;
+	            }
+	        }
+
+	        return totalDiscount;
+	    }
+
+}

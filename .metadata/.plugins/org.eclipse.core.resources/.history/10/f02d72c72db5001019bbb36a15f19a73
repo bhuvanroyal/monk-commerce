@@ -1,0 +1,6 @@
+package com.monkcommerce.couponservice.entity;
+
+public class CartWiseCoupon extends Coupon {
+	
+
+}
